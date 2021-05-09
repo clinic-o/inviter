@@ -16,5 +16,8 @@
   "bugs": {
     "url": "https://github.com/clinic-o/inviter/issues"
   },
-  "homepage": "https://github.com/clinic-o/inviter#readme"
+  "homepage": "https://github.com/clinic-o/inviter#readme",
+  "devDependencies": {
+    "typescript": "^4.2.4"
+  }
 }

@@ -1,0 +1,20 @@
+{
+  "private": true,
+  "name": "inviter",
+  "version": "1.0.0",
+  "description": "",
+  "main": "app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/clinic-o/inviter.git"
+  },
+  "author": "Neuman Vong",
+  "license": "UNLICENSED",
+  "bugs": {
+    "url": "https://github.com/clinic-o/inviter/issues"
+  },
+  "homepage": "https://github.com/clinic-o/inviter#readme"
+}

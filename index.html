@@ -16,7 +16,10 @@ main(
   document.getElementById("authorize_button"),
   document.getElementById("signout_button"));
 </script>
+
 <script>
+
+const EmailFieldIx = 22;
 /**
  * Translate clicks into selecting the clicked row.
  */
@@ -29,6 +32,26 @@ function selectRow(e) {
     if (input == null) break;
     input.checked = true;
     input.focus();
+
+    let invite = document.forms["invite-detail"];
+    let field = path[i].children[EmailFieldIx];
+    invite["emails"].value = (field == null) ? "" : field.innerHTML;
+  }
+}
+
+function preventDefault(e) { e.preventDefault(); }
+
+function refreshEndTimes(e) {
+  let start = document.forms["invite-detail"]["start"].value,
+    times = document.querySelector("#end-times"),
+    hour = parseInt(start.substring(0, 2)),
+    minute = parseInt(start.substring(3, 5));
+
+  for (let i = 0; i < times.options.length; i++) {
+    let newHour = Math.floor(hour + i * 0.5 + minute / 60) % 24,
+      newMinute = (minute + i * 30) % 60;
+    times.options[i].innerHTML = `${newHour}`.padStart(2, 0) + ":" + `${newMinute}`.padStart(2, 0);
+    times.options[i].label = `${i / 2} hours`;
   }
 }
 </script>
@@ -42,6 +65,123 @@ function selectRow(e) {
 
   <button id="authorize_button">Authorize</button>
   <button id="signout_button">Sign Out</button>
+
+  <datalist id="start-times">
+    <option>00:30</option>
+    <option>01:00</option>
+    <option>01:30</option>
+    <option>02:00</option>
+    <option>02:30</option>
+    <option>03:00</option>
+    <option>03:30</option>
+    <option>04:00</option>
+    <option>04:30</option>
+    <option>05:00</option>
+    <option>05:30</option>
+    <option>06:00</option>
+    <option>06:30</option>
+    <option>07:00</option>
+    <option>07:30</option>
+    <option>08:00</option>
+    <option>08:30</option>
+    <option>09:00</option>
+    <option>09:30</option>
+    <option>10:00</option>
+    <option>10:30</option>
+    <option>12:00</option>
+    <option>12:30</option>
+    <option>13:00</option>
+    <option>13:30</option>
+    <option>14:00</option>
+    <option>14:30</option>
+    <option>15:00</option>
+    <option>15:30</option>
+    <option>16:00</option>
+    <option>16:30</option>
+    <option>17:00</option>
+    <option>17:30</option>
+    <option>18:00</option>
+    <option>18:30</option>
+    <option>19:00</option>
+    <option>19:30</option>
+    <option>20:00</option>
+    <option>20:30</option>
+    <option>21:00</option>
+    <option>21:30</option>
+    <option>22:00</option>
+    <option>22:30</option>
+    <option>23:00</option>
+    <option>23:30</option>
+  </datalist>
+
+  <datalist id="end-times">
+    <option>00:30</option>
+    <option>01:00</option>
+    <option>01:30</option>
+    <option>02:00</option>
+    <option>02:30</option>
+    <option>03:00</option>
+    <option>03:30</option>
+    <option>04:00</option>
+    <option>04:30</option>
+    <option>05:00</option>
+    <option>05:30</option>
+    <option>06:00</option>
+    <option>06:30</option>
+    <option>07:00</option>
+    <option>07:30</option>
+    <option>08:00</option>
+    <option>08:30</option>
+    <option>09:00</option>
+    <option>09:30</option>
+    <option>10:00</option>
+    <option>10:30</option>
+    <option>12:00</option>
+    <option>12:30</option>
+    <option>13:00</option>
+    <option>13:30</option>
+    <option>14:00</option>
+    <option>14:30</option>
+    <option>15:00</option>
+    <option>15:30</option>
+    <option>16:00</option>
+    <option>16:30</option>
+    <option>17:00</option>
+    <option>17:30</option>
+    <option>18:00</option>
+    <option>18:30</option>
+    <option>19:00</option>
+    <option>19:30</option>
+    <option>20:00</option>
+    <option>20:30</option>
+    <option>21:00</option>
+    <option>21:30</option>
+    <option>22:00</option>
+    <option>22:30</option>
+    <option>23:00</option>
+    <option>23:30</option>
+  </datalist>
+
+  <form id="invite-detail">
+    <p>
+      <label>
+        Email:
+        <input type="email" name="emails" required multiple>
+      </label>
+    </p>
+    <p>
+      <label>Time:
+        <input type="date" name="date" required>
+        <input type="time" name="start" list="start-times" required>
+        <input type="time" name="end" list="end-times" required>
+      </label>
+    </p>
+    <p>
+      <label for="notes">Notes:</label>
+      <textarea name="notes"></textarea>
+    </p>
+    <p><input type="submit" value="Go"></p>
+  </form>
 
   <table id="records">
     <thead>
@@ -69,6 +209,20 @@ function selectRow(e) {
   <pre id="content" style="white-space: pre-wrap;"></pre>
   <script>
     document.body.addEventListener("click", selectRow);
+
+    let invite = document.forms["invite-detail"];
+    invite.addEventListener("submit", preventDefault);
+    let now = new Date;
+    now.setMinutes(-now.getTimezoneOffset());
+    now.setMinutes(now.getMinutes() < 30 ? 30 : 60);
+    now.setSeconds(0);
+
+    let parts = now.toISOString().split(/T|\./);
+    invite["date"].value = parts[0];
+    invite["start"].value = parts[1];
+    invite["end"].value = parts[1];
+
+    invite["start"].addEventListener("change", refreshEndTimes);
   </script>
   </body>
 </html>

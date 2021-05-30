@@ -16,7 +16,22 @@ main(
   document.getElementById("authorize_button"),
   document.getElementById("signout_button"));
 </script>
-
+<script>
+/**
+ * Translate clicks into selecting the clicked row.
+ */
+function selectRow(e) {
+  let path = e.composedPath();
+  for (let i = 0; i < path.length; i++) {
+    if (path[i].nodeName == "TABLE") break;
+    if (path[i].nodeName != "TR") continue;
+    let input = path[i].querySelector("input");
+    if (input == null) break;
+    input.checked = true;
+    input.focus();
+  }
+}
+</script>
 
 </head>
 
@@ -52,6 +67,8 @@ main(
   </table>
 
   <pre id="content" style="white-space: pre-wrap;"></pre>
-
+  <script>
+    document.body.addEventListener("click", selectRow);
+  </script>
   </body>
 </html>

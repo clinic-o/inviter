@@ -95,7 +95,7 @@ function handleSignoutClick(event: any): Promise<void> {
  * @param {string} message Text to be placed in pre element.
  */
 function appendPre(message: string): void {
-  let pre = document.getElementById("content");
+  let pre = document.getElementById("debug");
   let textContent = document.createTextNode(`${message}\n`);
   pre?.appendChild(textContent);
 }

@@ -12,11 +12,12 @@ const DISCOVERY_DOCS = [
 // Authorization scopes required by the API; multiple scopes can be
 // included, separated by spaces.
 const SCOPES = [
-    "https://www.googleapis.com/auth/calendar.readonly",
+    "https://www.googleapis.com/auth/calendar",
     "https://www.googleapis.com/auth/spreadsheets"
 ].join(" ");
-export async function main(authorizeButton, signoutButton, spreadsheetID, range) {
+export async function main(authorizeButton, signoutButton, inviteForm, spreadsheetID, range) {
     appendPre("gapi.load: begin");
+    inviteForm.addEventListener("submit", submitInvite);
     await new Promise((ok, fail) => gapi.load("client:auth2", {
         callback: ok,
         onerror: fail,
@@ -116,4 +117,35 @@ async function listUpcomingEvents() {
         let when = event.start.dateTime ?? event.start.date ?? "unknown";
         appendPre(`${event.summary} (${when})`);
     }
+}
+async function submitInvite(event) {
+    let invite = event.target;
+    let options = (new Intl.DateTimeFormat).resolvedOptions();
+    let start = new Date(`${invite["date"].value}T${invite["start"].value}`);
+    let end = new Date(`${invite["date"].value}T${invite["end"].value}`);
+    start.setSeconds(0);
+    start.setMilliseconds(0);
+    end.setSeconds(0);
+    end.setMilliseconds(0);
+    return createEvent("Consultation", invite["notes"].value, invite["emails"].value.split(","), start.toISOString(), end.toISOString(), options.timeZone);
+}
+async function createEvent(summary, description, emails, startTime, endTime, tz) {
+    let event = {
+        summary: summary,
+        description: description,
+        start: {
+            dateTime: startTime,
+            timeZone: tz,
+        },
+        end: {
+            dateTime: endTime,
+            timeZone: tz,
+        },
+        attendees: emails.map(email => { return { email: email }; }),
+    };
+    let response = await gapi.client.calendar.events.insert({
+        calendarId: "primary",
+        resource: event
+    });
+    appendPre(`Event created: ${response.result.htmlLink}`);
 }

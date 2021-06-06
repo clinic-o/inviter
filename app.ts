@@ -16,18 +16,21 @@ const DISCOVERY_DOCS = [
 // Authorization scopes required by the API; multiple scopes can be
 // included, separated by spaces.
 const SCOPES = [
-  "https://www.googleapis.com/auth/calendar.readonly",
+  "https://www.googleapis.com/auth/calendar",
   "https://www.googleapis.com/auth/spreadsheets"
 ].join(" ");
 
 export async function main(
   authorizeButton: HTMLButtonElement,
   signoutButton: HTMLButtonElement,
+  inviteForm: HTMLFormElement,
   spreadsheetID: string,
   range: string
 ): Promise<void> {
 
   appendPre("gapi.load: begin");
+
+  inviteForm.addEventListener("submit", submitInvite);
 
   await new Promise((ok, fail) => gapi.load("client:auth2", {
     callback: ok,
@@ -151,3 +154,53 @@ async function listUpcomingEvents(): Promise<void> {
   }
 }
 
+async function submitInvite(event: Event): Promise<void> {
+  let invite: HTMLFormElement = event.target as HTMLFormElement;
+
+  let options = (new Intl.DateTimeFormat).resolvedOptions();
+
+  let start = new Date(`${invite["date"].value}T${invite["start"].value}`)
+  let end = new Date(`${invite["date"].value}T${invite["end"].value}`)
+  start.setSeconds(0)
+  start.setMilliseconds(0)
+  end.setSeconds(0)
+  end.setMilliseconds(0)
+
+  return createEvent(
+    "Consultation",
+    invite["notes"].value,
+    invite["emails"].value.split(","),
+    start.toISOString(),
+    end.toISOString(),
+    options.timeZone
+  );
+}
+
+async function createEvent(
+  summary: string,
+  description: string,
+  emails: string[],
+  startTime: string,
+  endTime: string,
+  tz: string,
+): Promise<void> {
+  let event = {
+    summary: summary,
+    description: description,
+    start: {
+      dateTime: startTime,
+      timeZone: tz,
+    },
+    end: {
+      dateTime: endTime,
+      timeZone: tz,
+    },
+    attendees: emails.map(email => { return { email: email } }),
+  };
+
+  let response = await gapi.client.calendar.events.insert({
+    calendarId: "primary",
+    resource: event
+  });
+  appendPre(`Event created: ${response.result.htmlLink}`);
+}

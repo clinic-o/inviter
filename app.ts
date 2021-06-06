@@ -22,7 +22,9 @@ const SCOPES = [
 
 export async function main(
   authorizeButton: HTMLButtonElement,
-  signoutButton: HTMLButtonElement
+  signoutButton: HTMLButtonElement,
+  spreadsheetID: string,
+  range: string
 ): Promise<void> {
 
   appendPre("gapi.load: begin");
@@ -44,7 +46,7 @@ export async function main(
 
     try {
       await listUpcomingEvents();
-      await showSheet("1Tg_8DKGZkH6-LBjdFyzU8e-X8Xq_Ip1V58S_kt6onqI", "Consultations");
+      await showSheet(spreadsheetID, range);
     } catch (err: unknown) {
       appendPre(JSON.stringify(err, Object.getOwnPropertyNames(err)));
       throw err;
@@ -100,15 +102,16 @@ function appendPre(message: string): void {
   pre?.appendChild(textContent);
 }
 
-async function showSheet(sid: string, range: string): Promise<void> {
-  let params = {
-    spreadsheetId: sid,
-    range: range,
-  };
+async function showSheet(sid: string, range?: string): Promise<void> {
+  let params = (
+    range == null ?
+      { spreadsheetId: sid } :
+      { spreadsheetId: sid, range: range }
+  );
 
   let response = await gapi.client.sheets.spreadsheets.values.get(params);
 
-  let headers = response.result.values.slice(0, 2);
+  let headers = response.result.values.slice(0, 1);
 
   await render("#records-header-template")
     .withValue(headers)

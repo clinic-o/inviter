@@ -11,14 +11,34 @@
 <script type="module">
 import { main } from "./app.js";
 
-main(
-  document.getElementById("authorize_button"),
-  document.getElementById("signout_button"));
+window.addEventListener('DOMContentLoaded', (event) => {
+  main(
+    document.getElementById("authorize_button"),
+    document.getElementById("signout_button"),
+    document.forms["config"]["spreadsheet-id"].value,
+    document.forms["config"]["range"].value);
+});
 </script>
 
 <script>
-const EmailFieldIx = 22;
-const ReasonFieldIx = 9;
+let params = {};
+
+window.addEventListener('DOMContentLoaded', (event) => {
+  Object.assign(
+    params,
+    {
+      "spreadsheet-id": "1Tg_8DKGZkH6-LBjdFyzU8e-X8Xq_Ip1V58S_kt6onqI",
+      "range": "Consultations",
+      "email-field-ix": 2,
+      "reason-field-ix": 9
+    },
+    Object.fromEntries(new URLSearchParams(window.location.search).entries())
+  );
+
+  for (const [key, value] of Object.entries(params)) {
+    document.forms["config"][key].value = value;
+  }
+});
 
 /**
  * Translate clicks into selecting the clicked row.
@@ -34,8 +54,8 @@ function selectRow(e) {
     input.focus();
 
     let invite = document.forms["invite-detail"];
-    let emailField = path[i].children[EmailFieldIx];
-    let reasonField = path[i].children[ReasonFieldIx];
+    let emailField = path[i].children[params["email-field-ix"]];
+    let reasonField = path[i].children[params["reason-field-ix"]];
     invite["emails"].value = (emailField == null) ? "" : emailField.innerHTML;
     invite["notes"].value = (reasonField == null) ? "" : reasonField.innerHTML;
   }
@@ -72,6 +92,34 @@ function refreshEndTimes(e) {
   <button id="authorize_button">Authorize</button>
   <button id="signout_button">Sign Out</button>
 
+  <details class="debug">
+    <summary>Debug</summary>
+    <pre id="debug" style="white-space: pre-wrap;"></pre>
+  </details>
+
+  <details class="config">
+    <summary>Config</summary>
+    <form name="config">
+      <p><label>
+        <span>Spreadsheet ID:</span>
+        <input type="text" name="spreadsheet-id">
+      </label></p>
+      <p><label>
+        <span>Range:</span>
+        <input type="text" name="range">
+      </label></p>
+      <p><label>
+        <span>Email field index:</span>
+        <input type="number" min=0 max=1000 name="email-field-ix">
+      </label></p>
+      <p><label>
+        <span>Reason field index:</span>
+        <input type="number" min=0 max=1000 name="reason-field-ix">
+      </label></p>
+      <input type="submit" value="Go">
+    </form>
+  </details>
+
   <table id="records">
     <thead>
       <template id="records-header-template">
@@ -94,11 +142,6 @@ function refreshEndTimes(e) {
       </template>
     </tbody>
   </table>
-
-  <details class="debug">
-    <summary>Debug</summary>
-    <pre id="debug" style="white-space: pre-wrap;"></pre>
-  </details>
 </div>
 
 <div id="tab">

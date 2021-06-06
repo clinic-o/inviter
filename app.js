@@ -15,7 +15,7 @@ const SCOPES = [
     "https://www.googleapis.com/auth/calendar.readonly",
     "https://www.googleapis.com/auth/spreadsheets"
 ].join(" ");
-export async function main(authorizeButton, signoutButton) {
+export async function main(authorizeButton, signoutButton, spreadsheetID, range) {
     appendPre("gapi.load: begin");
     await new Promise((ok, fail) => gapi.load("client:auth2", {
         callback: ok,
@@ -31,7 +31,7 @@ export async function main(authorizeButton, signoutButton) {
             return Promise.resolve();
         try {
             await listUpcomingEvents();
-            await showSheet("1Tg_8DKGZkH6-LBjdFyzU8e-X8Xq_Ip1V58S_kt6onqI", "Consultations");
+            await showSheet(spreadsheetID, range);
         }
         catch (err) {
             appendPre(JSON.stringify(err, Object.getOwnPropertyNames(err)));
@@ -80,12 +80,11 @@ function appendPre(message) {
     pre?.appendChild(textContent);
 }
 async function showSheet(sid, range) {
-    let params = {
-        spreadsheetId: sid,
-        range: range,
-    };
+    let params = (range == null ?
+        { spreadsheetId: sid } :
+        { spreadsheetId: sid, range: range });
     let response = await gapi.client.sheets.spreadsheets.values.get(params);
-    let headers = response.result.values.slice(0, 2);
+    let headers = response.result.values.slice(0, 1);
     await render("#records-header-template")
         .withValue(headers)
         .into("#records thead");

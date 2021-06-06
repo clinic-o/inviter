@@ -65,7 +65,7 @@ label > span {
   vertical-align: top;
 }
 
-details.debug {
+details.debug, details.config {
   margin: 16px 0;
   border: 1px solid #aaa;
   padding: 8px;
